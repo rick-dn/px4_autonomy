@@ -177,3 +177,17 @@ ros2 service list | grep vehicle
 ---
 
 **Clean abstraction between your autonomous systems and PX4.**
+
+## License
+
+This project is licensed under the **Creative Commons Attribution-NonCommercial 4.0 International License (CC-BY-NC-4.0)**.
+
+You are free to:
+- Share and redistribute the material
+- Adapt, remix, and build upon the material
+
+**Under the following terms:**
+- **Attribution** — You must give appropriate credit to the original authors
+- **NonCommercial** — You may not use this material for commercial purposes
+
+For full license details, see the [LICENSE](LICENSE) file or visit [CC-BY-NC-4.0](https://creativecommons.org/licenses/by-nc/4.0/).

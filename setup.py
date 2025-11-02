@@ -6,7 +6,7 @@ package_name = 'px4_autonomy'
 
 setup(
     name=package_name,
-    version='0.0.0',
+    version='0.2.0',
     packages=find_packages(exclude=['test']),
     data_files=[
         ('share/ament_index/resource_index/packages',
@@ -18,9 +18,9 @@ setup(
     install_requires=['setuptools','setuptools_scm'],
     zip_safe=True,
     maintainer='udl',
-    maintainer_email='udl@todo.todo',
+    maintainer_email='hello@usefuldynamics.io',
     description='TODO: Package description',
-    license='TODO: License declaration',
+    license='CC-BY-NC-4.0',
     tests_require=['pytest'],
     entry_points={
     'console_scripts': [

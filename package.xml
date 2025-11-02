@@ -4,8 +4,8 @@
   <name>px4_autonomy</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="udl@todo.todo">udl</maintainer>
-  <license>TODO: License declaration</license>
+  <maintainer email="hello@usefuldynamics.io">udl</maintainer>
+  <license>CC-BY-NC-4.0</license>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

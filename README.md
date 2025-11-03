@@ -2,6 +2,8 @@
 
 A lightweight ROS2 flight controller interface for PX4 drones. Provides centralized offboard control with clean service-based API.
 
+![Visitor Count](https://hits.seeyou.design/pages/view/rick-dn.px4_autonomy?style=for-the-badge&color=blue)
+
 ## Version History
 
 ### v0.1.0

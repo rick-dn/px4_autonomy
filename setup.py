@@ -25,6 +25,8 @@ setup(
     entry_points={
     'console_scripts': [
         'vehicle_interface = px4_autonomy.nodes.offboard.vehicle_interface:main',
+        'object_detector = px4_autonomy.nodes.vision.object_detector:main',
+        'aruco_detector = px4_autonomy.nodes.vision.aruco_detector:main'
         ],
     },
 )

@@ -14,8 +14,12 @@ class ArucoDetector(Node):
         self.bridge = CvBridge()
 
         # ArUco setup
-        self.aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_50)
-        self.aruco_params = cv2.aruco.DetectorParameters_create()
+
+        self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+        self.aruco_params = cv2.aruco.DetectorParameters()
+
+        # self.aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_50)
+        # self.aruco_params = cv2.aruco.DetectorParameters_create()
 
         # Camera parameters (typical for simulated camera)
         self.camera_matrix = np.array([

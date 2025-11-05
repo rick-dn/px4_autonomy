@@ -5,9 +5,8 @@ A lightweight ROS2 flight controller interface for PX4 drones. Provides centrali
 
 ### Repository Traffic
 
-![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=rick-dn.px4-autonomy&color=blue)
+![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=rick-dn.px4-autonomy&color=blue) ![Views and Clones](https://raw.githubusercontent.com/rick-dn/px4-autonomy/github-repo-stats/views_clones_graph.png)
 
-![Views and Clones](https*://github.com/rick-dn/px4-autonomy/blob/github-repo-stats/views_clones_graph.png?raw=true)
 
 ## Version History
 

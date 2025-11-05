@@ -1,4 +1,5 @@
-# px4_autonomy
+# px4_autonomy by Useful Dynamics
+[🚀 Visit Website](https://usefuldynamics.io)
 
 A lightweight ROS2 flight controller interface for PX4 drones. Provides centralized offboard control with clean service-based API.
 

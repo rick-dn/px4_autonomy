@@ -13,13 +13,9 @@ class ArucoDetector(Node):
         super().__init__('aruco_detector')
         self.bridge = CvBridge()
 
-        # ArUco setup
-
+        # ArUco setup (OpenCV 4.7+)
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
-        self.aruco_params = cv2.aruco.DetectorParameters()
-
-        # self.aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_50)
-        # self.aruco_params = cv2.aruco.DetectorParameters_create()
+        self.detector = cv2.aruco.ArucoDetector(self.aruco_dict)
 
         # Camera parameters (typical for simulated camera)
         self.camera_matrix = np.array([
@@ -36,59 +32,72 @@ class ArucoDetector(Node):
         self.image_sub = self.create_subscription(
             Image,
             '/world/default/model/x500_gimbal_0/link/camera_link/sensor/camera/image',
+            # '/world/default/model/x500_depth_0/link/camera_link/sensor/IMX214/image',
             self.image_callback,
             10
         )
 
         # Publish marker pose
-        self.pose_pub = self.create_publisher(PoseStamped, '/aruco/pose', 10)
+        self.pose_pub = self.create_publisher(PoseStamped, '/vision/aruco', 10)
 
         self.get_logger().info('ArUco detector with pose estimation started')
 
     def image_callback(self, msg):
         cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
 
-        # Detect markers
-        corners, ids, rejected = cv2.aruco.detectMarkers(
-            cv_image, self.aruco_dict, parameters=self.aruco_params
-        )
+        # Detect markers (OpenCV 4.7+)
+        corners, ids, rejected = self.detector.detectMarkers(cv_image)
 
         if ids is not None:
             # Draw markers
-            cv2.aruco.drawDetectedMarkers(cv_image, corners, ids)
+            cv_image = cv2.aruco.drawDetectedMarkers(cv_image, corners, ids)
 
-            # Estimate pose for each marker
-            rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
-                corners, self.marker_size, self.camera_matrix, self.dist_coeffs
-            )
-
+            # Estimate pose for each marker (OpenCV 4.7+)
             for i, marker_id in enumerate(ids.flatten()):
-                # Draw axis
-                cv2.drawFrameAxes(cv_image, self.camera_matrix, self.dist_coeffs,
-                                  rvecs[i], tvecs[i], 1.0)
+                # Get corner points for this marker
+                corner = corners[i][0]
 
-                # Get position
-                x, y, z = tvecs[i][0]
-                distance = np.linalg.norm(tvecs[i])
-
-                # Display info on image
-                text = f"ID:{marker_id} Dist:{distance:.2f}m"
-                cv2.putText(cv_image, text, (10, 30 + i * 30),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-
-                self.get_logger().info(
-                    f'Marker {marker_id}: x={x:.2f}, y={y:.2f}, z={z:.2f}, dist={distance:.2f}m'
+                # Use solvePnP for pose estimation
+                success, rvec, tvec = cv2.solvePnP(
+                    np.array([
+                        [-self.marker_size/2, self.marker_size/2, 0],
+                        [self.marker_size/2, self.marker_size/2, 0],
+                        [self.marker_size/2, -self.marker_size/2, 0],
+                        [-self.marker_size/2, -self.marker_size/2, 0]
+                    ], dtype=np.float32),
+                    corner,
+                    self.camera_matrix,
+                    self.dist_coeffs
                 )
 
-                # Publish pose
-                pose_msg = PoseStamped()
-                pose_msg.header.stamp = self.get_clock().now().to_msg()
-                pose_msg.header.frame_id = 'camera_link'
-                pose_msg.pose.position.x = x
-                pose_msg.pose.position.y = y
-                pose_msg.pose.position.z = z
-                self.pose_pub.publish(pose_msg)
+                if success:
+                    # Draw axis
+                    cv2.drawFrameAxes(cv_image, self.camera_matrix, self.dist_coeffs,
+                                      rvec, tvec, 1.0)
 
+                    # Get position
+                    x, y, z = tvec.flatten()
+                    distance = np.linalg.norm(tvec)
+
+                    # Display info on image
+                    text = f"ID:{marker_id} Dist:{distance:.2f}m"
+                    cv2.putText(cv_image, text, (10, 30 + i * 30),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+
+                    self.get_logger().info(
+                        f'Marker {marker_id}: x={x:.2f}, y={y:.2f}, z={z:.2f}, dist={distance:.2f}m'
+                    )
+
+                    # Publish pose
+                    pose_msg = PoseStamped()
+                    pose_msg.header.stamp = self.get_clock().now().to_msg()
+                    pose_msg.header.frame_id = 'camera_link'
+                    pose_msg.pose.position.x = x
+                    pose_msg.pose.position.y = y
+                    pose_msg.pose.position.z = z
+                    self.pose_pub.publish(pose_msg)
+
+        # test vis
         cv2.imshow('ArUco Detection', cv_image)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             rclpy.shutdown()

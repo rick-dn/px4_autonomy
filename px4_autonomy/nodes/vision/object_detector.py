@@ -8,6 +8,7 @@ from cv_bridge import CvBridge
 from ultralytics import YOLO
 import cv2
 
+
 class ObjectDetector(Node):
     def __init__(self):
         super().__init__('object_detector')
@@ -21,7 +22,8 @@ class ObjectDetector(Node):
         # Subscribe to camera
         self.camera_sub = self.create_subscription(
             Image,
-            '/world/default/model/x500_depth_0/link/camera_link/sensor/IMX214/image',
+            '/world/default/model/x500_gimbal_0/link/camera_link/sensor/camera/image',
+            # '/world/default/model/x500_depth_0/link/camera_link/sensor/IMX214/image',
             self.image_callback,
             10
         )
@@ -37,7 +39,9 @@ class ObjectDetector(Node):
 
     def image_callback(self, msg):
         # Convert ROS Image to OpenCV
+        # self.get_logger().info('image callback')
         cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+        # self.get_logger().info('image callback')
 
         # Run YOLO detection
         results = self.model(cv_image, verbose=False)
@@ -47,6 +51,7 @@ class ObjectDetector(Node):
         detection_array.header = msg.header
 
         if results[0].boxes is not None:
+            self.get_logger().info('detected')
             for box in results[0].boxes:
                 detection = Detection2D()
                 detection.header = msg.header
@@ -73,6 +78,24 @@ class ObjectDetector(Node):
         # Publish
         self.detections_pub.publish(detection_array)
         self.get_logger().debug(f'Published {len(detection_array.detections)} detections')
+
+        # Visualization
+        for detection in detection_array.detections:
+            x = int(detection.bbox.center.position.x)
+            y = int(detection.bbox.center.position.y)
+            w = int(detection.bbox.size_x)
+            h = int(detection.bbox.size_y)
+
+            cv2.rectangle(cv_image, (x - w // 2, y - h // 2), (x + w // 2, y + h // 2), (0, 255, 0), 2)
+
+            if detection.results:
+                class_id = detection.results[0].hypothesis.class_id
+                score = detection.results[0].hypothesis.score
+                cv2.putText(cv_image, f'{class_id} {score:.2f}',
+                            (x - w // 2, y - h // 2 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+        cv2.imshow('YOLO Detection', cv_image)
+        cv2.waitKey(1)
 
 
 def main(args=None):
